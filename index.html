@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مولد البطاقات الوهمية المتقدم</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .credit-card {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        }
+        .chip {
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569; 
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 text-white">
+
+    <div class="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <div class="space-y-6">
+            <div class="text-center lg:text-right">
+                <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-l from-blue-400 to-purple-500 mb-2">
+                    <i class="fa-solid fa-credit-card ml-2"></i>مولد البطاقات الذكي
+                </h1>
+                <p class="text-gray-400 text-sm">توليد بيانات اختبارية كاملة مع التحقق من صحة الخوارزمية (Luhn).</p>
+            </div>
+
+            <div class="glass-panel p-6 rounded-2xl shadow-xl">
+                <label class="block text-sm font-medium text-gray-300 mb-2">اختر نوع البطاقة</label>
+                <div class="flex gap-4 mb-6">
+                    <button onclick="setCardType('visa')" id="btn-visa" class="flex-1 py-3 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 transition flex items-center justify-center gap-2 ring-2 ring-blue-500">
+                        <i class="fa-brands fa-cc-visa text-2xl"></i> Visa
+                    </button>
+                    <button onclick="setCardType('mastercard')" id="btn-master" class="flex-1 py-3 rounded-xl border border-gray-600 bg-gray-700/30 hover:bg-gray-700/50 transition flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-cc-mastercard text-2xl"></i> Mastercard
+                    </button>
+                </div>
+
+                <button onclick="handleGenerateClick()" class="w-full py-4 bg-gradient-to-l from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-xl font-bold text-lg shadow-lg hover:shadow-blue-500/25 transition transform hover:-translate-y-1">
+                    <i class="fa-solid fa-wand-magic-sparkles ml-2"></i> توليد بيانات جديدة
+                </button>
+            </div>
+
+            <div class="relative w-full h-56 rounded-2xl credit-card p-6 shadow-2xl flex flex-col justify-between text-white select-none">
+                <div class="flex justify-between items-start">
+                    <div class="w-12 h-9 rounded bg-yellow-400/80 chip relative overflow-hidden border border-yellow-300/50">
+                        <div class="absolute top-1/2 w-full h-[1px] bg-black/20"></div>
+                        <div class="absolute left-1/2 h-full w-[1px] bg-black/20"></div>
+                        <div class="absolute top-1/2 left-1/2 w-4 h-4 border border-black/20 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+                    </div>
+                    <i id="card-logo-icon" class="fa-brands fa-cc-visa text-4xl opacity-90"></i>
+                </div>
+                
+                <div class="mt-4">
+                    <div class="text-xs text-gray-200 uppercase tracking-widest mb-1">Card Number</div>
+                    <div id="disp-cc-num" class="text-2xl font-mono tracking-wider drop-shadow-md">**** **** **** ****</div>
+                </div>
+
+                <div class="flex justify-between items-end">
+                    <div>
+                        <div class="text-[10px] text-gray-200 uppercase">Card Holder</div>
+                        <div id="disp-name" class="font-medium tracking-wide uppercase truncate w-48">CARD HOLDER NAME</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[10px] text-gray-200 uppercase">Expires</div>
+                        <div id="disp-exp" class="font-mono font-bold">MM/YY</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel p-6 rounded-2xl shadow-xl flex flex-col h-full">
+            <h2 class="text-xl font-bold mb-4 border-b border-gray-700 pb-2">تفاصيل الهوية والفوترة</h2>
+            
+            <div class="space-y-4 flex-grow font-mono text-sm" id="details-container">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-3 bg-gray-800/50 rounded-lg">
+                        <span class="block text-gray-400 text-xs mb-1">الاسم الكامل</span>
+                        <span id="val-name" class="text-blue-300 select-all">---</span>
+                    </div>
+                    <div class="p-3 bg-gray-800/50 rounded-lg">
+                        <span class="block text-gray-400 text-xs mb-1">النوع</span>
+                        <span id="val-type" class="text-purple-300">---</span>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-gray-800/50 rounded-lg">
+                    <span class="block text-gray-400 text-xs mb-1">رقم البطاقة</span>
+                    <span id="val-cc" class="text-green-400 font-bold tracking-widest select-all">--- --- --- ---</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-3 bg-gray-800/50 rounded-lg">
+                        <span class="block text-gray-400 text-xs mb-1">تاريخ الانتهاء</span>
+                        <span id="val-exp" class="text-yellow-300 select-all">--/--</span>
+                    </div>
+                    <div class="p-3 bg-gray-800/50 rounded-lg">
+                        <span class="block text-gray-400 text-xs mb-1">رمز الأمان (CVV)</span>
+                        <span id="val-cvv" class="text-red-300 select-all">***</span>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-700 my-2"></div>
+
+                <div class="p-3 bg-gray-800/50 rounded-lg">
+                    <span class="block text-gray-400 text-xs mb-1">العنوان (Address)</span>
+                    <span id="val-address" class="text-gray-200 select-all">---</span>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="p-3 bg-gray-800/50 rounded-lg col-span-1">
+                        <span class="block text-gray-400 text-xs mb-1">الولاية</span>
+                        <span id="val-state" class="text-gray-200 select-all">---</span>
+                    </div>
+                    <div class="p-3 bg-gray-800/50 rounded-lg col-span-1">
+                        <span class="block text-gray-400 text-xs mb-1">الرمز البريدي</span>
+                        <span id="val-zip" class="text-gray-200 select-all">---</span>
+                    </div>
+                     <div class="p-3 bg-gray-800/50 rounded-lg col-span-1">
+                        <span class="block text-gray-400 text-xs mb-1">المدينة</span>
+                        <span id="val-city" class="text-gray-200 select-all">---</span>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="copyAllDetails()" class="mt-6 w-full py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-semibold transition flex items-center justify-center gap-2 group">
+                <i class="fa-regular fa-copy group-hover:scale-110 transition"></i> نسخ جميع البيانات
+            </button>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-full shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none flex items-center gap-2 z-50">
+        <i class="fa-solid fa-check-circle"></i> تم نسخ البيانات بنجاح!
+    </div>
+
+    <script>
+        let currentCardType = 'visa';
+        const adLink = "https://www.effectivegatecpm.com/aucwp6s54t?key=4a372791932d4c36a2694f6339cf60c8";
+        
+        const firstNames = ["James", "John", "Robert", "Michael", "William", "David", "Richard", "Joseph", "Thomas", "Charles", "Mary", "Patricia", "Jennifer", "Linda", "Elizabeth", "Barbara", "Susan", "Jessica", "Sarah", "Karen"];
+        const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson"];
+        const streets = ["Main St", "High St", "Maple Ave", "Oak St", "Washington St", "Park Ave", "Cedar Ln", "Elm St", "Sunset Blvd", "Pine St"];
+        const usStates = [
+            { name: "California", code: "CA", city: "Los Angeles", zipMin: 90001, zipMax: 90050 },
+            { name: "New York", code: "NY", city: "New York", zipMin: 10001, zipMax: 10040 },
+            { name: "Texas", code: "TX", city: "Houston", zipMin: 77001, zipMax: 77050 },
+            { name: "Florida", code: "FL", city: "Miami", zipMin: 33101, zipMax: 33140 },
+            { name: "Illinois", code: "IL", city: "Chicago", zipMin: 60601, zipMax: 60640 },
+            { name: "Washington", code: "WA", city: "Seattle", zipMin: 98101, zipMax: 98130 },
+            { name: "Nevada", code: "NV", city: "Las Vegas", zipMin: 89101, zipMax: 89130 }
+        ];
+
+        function setCardType(type) {
+            currentCardType = type;
+            const btnVisa = document.getElementById('btn-visa');
+            const btnMaster = document.getElementById('btn-master');
+            const logoIcon = document.getElementById('card-logo-icon');
+
+            if (type === 'visa') {
+                btnVisa.classList.add('ring-2', 'ring-blue-500');
+                btnVisa.classList.replace('bg-blue-500/10', 'bg-blue-500/20');
+                btnMaster.classList.remove('ring-2', 'ring-blue-500');
+                logoIcon.className = "fa-brands fa-cc-visa text-4xl opacity-90";
+            } else {
+                btnMaster.classList.add('ring-2', 'ring-blue-500');
+                btnVisa.classList.remove('ring-2', 'ring-blue-500');
+                btnVisa.classList.replace('bg-blue-500/20', 'bg-blue-500/10');
+                logoIcon.className = "fa-brands fa-cc-mastercard text-4xl opacity-90";
+            }
+        }
+
+        function handleGenerateClick() {
+            // فتح الإعلان في نافذة جديدة
+            window.open(adLink, '_blank');
+            // توليد البيانات
+            generateFullIdentity();
+        }
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function generateLuhnNumber(prefix, length) {
+            let ccNum = prefix;
+            while (ccNum.length < (length - 1)) {
+                ccNum += Math.floor(Math.random() * 10);
+            }
+            let reversedCC = ccNum.split('').reverse().join('');
+            let sum = 0;
+            for (let i = 0; i < reversedCC.length; i++) {
+                let digit = parseInt(reversedCC[i]);
+                if (i % 2 === 0) {
+                    digit *= 2;
+                    if (digit > 9) digit -= 9;
+                }
+                sum += digit;
+            }
+            let checkDigit = (10 - (sum % 10)) % 10;
+            return ccNum + checkDigit;
+        }
+
+        function generateFullIdentity() {
+            const fname = firstNames[Math.floor(Math.random() * firstNames.length)];
+            const lname = lastNames[Math.floor(Math.random() * lastNames.length)];
+            const fullName = `${fname} ${lname}`;
+
+            let prefix = currentCardType === 'visa' ? '4' : '53';
+            let length = 16;
+            const ccNum = generateLuhnNumber(prefix, length);
+            const formattedCC = ccNum.match(/.{1,4}/g).join(' ');
+
+            const today = new Date();
+            const expYear = today.getFullYear() + getRandomInt(1, 5);
+            const expMonth = getRandomInt(1, 12).toString().padStart(2, '0');
+            const expDate = `${expMonth}/${expYear.toString().slice(-2)}`;
+            const cvv = getRandomInt(100, 999);
+
+            const stateObj = usStates[Math.floor(Math.random() * usStates.length)];
+            const zip = getRandomInt(stateObj.zipMin, stateObj.zipMax);
+            const streetNum = getRandomInt(100, 9999);
+            const streetName = streets[Math.floor(Math.random() * streets.length)];
+            const address = `${streetNum} ${streetName}`;
+
+            // تحديث الواجهة
+            document.getElementById('disp-cc-num').innerText = formattedCC;
+            document.getElementById('disp-name').innerText = fullName.toUpperCase();
+            document.getElementById('disp-exp').innerText = expDate;
+            document.getElementById('val-name').innerText = fullName;
+            document.getElementById('val-type').innerText = currentCardType === 'visa' ? 'Visa' : 'Mastercard';
+            document.getElementById('val-cc').innerText = formattedCC;
+            document.getElementById('val-exp').innerText = expDate;
+            document.getElementById('val-cvv').innerText = cvv;
+            document.getElementById('val-address').innerText = address;
+            document.getElementById('val-state').innerText = `${stateObj.name} (${stateObj.code})`;
+            document.getElementById('val-city').innerText = stateObj.city;
+            document.getElementById('val-zip').innerText = zip;
+        }
+
+        function copyAllDetails() {
+            const ccValue = document.getElementById('val-cc').innerText;
+            if (ccValue.includes('*') || ccValue === '---') {
+                alert('يرجى توليد بيانات أولاً!');
+                return;
+            }
+            const data = {
+                CardType: document.getElementById('val-type').innerText,
+                Number: document.getElementById('val-cc').innerText,
+                Exp: document.getElementById('val-exp').innerText,
+                CVV: document.getElementById('val-cvv').innerText,
+                Name: document.getElementById('val-name').innerText,
+                Address: document.getElementById('val-address').innerText,
+                City: document.getElementById('val-city').innerText,
+                State: document.getElementById('val-state').innerText,
+                Zip: document.getElementById('val-zip').innerText
+            };
+            const textToCopy = `Type: ${data.CardType}\nNumber: ${data.Number}\nExp: ${data.Exp} | CVV: ${data.CVV}\nName: ${data.Name}\nAddress: ${data.Address}\nCity: ${data.City}, ${data.State} ${data.Zip}`.trim();
+            navigator.clipboard.writeText(textToCopy).then(() => { showToast(); });
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100', 'bottom-10');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'bottom-10');
+                toast.classList.add('opacity-0');
+            }, 2500);
+        }
+        
+        // حذفنا generateFullIdentity() من البداية لتبقى البيانات فارغة عند الدخول
+    </script>
+</body>
+</html>
